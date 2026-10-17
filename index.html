@@ -1,0 +1,1491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="dark">
+<title>typeforge ▍ JSON → TS / Go / Python Types</title>
+<meta name="description" content="Paste an API response, get ready-to-use TypeScript interfaces, Go structs or Python dataclasses. 100% client-side, zero uploads.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=VT323&family=Silkscreen:wght@400;700&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' shape-rendering='crispEdges'%3E%3Crect width='16' height='16' fill='%230A0E14'/%3E%3Crect x='3' y='3' width='3' height='3' fill='%2300FF66'/%3E%3Crect x='8' y='3' width='3' height='3' fill='%2300FF66'/%3E%3Crect x='3' y='8' width='3' height='3' fill='%2300FF66'/%3E%3Crect x='8' y='10' width='3' height='3' fill='%23FFB000'/%3E%3C/svg%3E">
+<style>
+/* ============================================================
+   PIXELSCAPE CLI / RETRO TERMINAL DESIGN SYSTEM
+   Void #0A0E14 · Window #161B22 · Border #30363D
+   Phosphor #00FF66 · Amber CRT #FFB000 · Matrix Grey #8B949E
+   ============================================================ */
+:root{
+  --void:#0A0E14;
+  --win:#161B22;
+  --win-dark:#0d1117;
+  --border:#30363D;
+  --green:#00FF66;
+  --amber:#FFB000;
+  --grey:#8B949E;
+  --red:#FF3B30;
+  --cyan:#3FD2E7;
+  --purple:#d2a8ff;
+  --shadow:4px 4px 0 #000;
+  --f-term:'VT323',monospace;
+  --f-pix:'Silkscreen',monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box;border-radius:0px !important;}
+html{scroll-behavior:smooth;}
+body{
+  background:var(--void);
+  color:#E6EDF3;
+  font-family:var(--f-term);
+  font-size:20px;
+  line-height:1.45;
+  min-height:100vh;
+  position:relative;
+  overflow-x:hidden;
+}
+/* deep-space pixel starfield */
+#stars{
+  position:fixed;inset:0;width:100%;height:100%;
+  z-index:0;opacity:.9;pointer-events:none;
+  image-rendering:pixelated;
+}
+/* CRT scanline overlay */
+body::before{
+  content:"";position:fixed;inset:0;z-index:40;pointer-events:none;
+  background:repeating-linear-gradient(to bottom,rgba(0,0,0,0) 0 2px,rgba(0,0,0,.13) 2px 4px);
+  mix-blend-mode:multiply;
+}
+.wrap{position:relative;z-index:3;max-width:1200px;margin:0 auto;padding:16px 16px 92px;}
+
+/* ---------- header ---------- */
+header{border-bottom:2px solid var(--border);padding:12px 2px 12px;}
+.hrow{display:flex;flex-wrap:wrap;gap:8px 20px;align-items:center;}
+.logo{font-family:var(--f-pix);font-weight:700;font-size:14px;color:var(--green);letter-spacing:1px;text-transform:uppercase;display:flex;align-items:center;gap:10px;}
+.logo .amber{color:var(--amber);}
+.sprite{width:24px;height:24px;image-rendering:pixelated;flex:none;}
+.metrics{display:flex;flex-wrap:wrap;gap:8px 18px;margin-left:auto;font-family:var(--f-pix);font-size:9px;color:var(--grey);letter-spacing:1px;}
+.metrics b{color:var(--green);font-weight:400;}
+.metrics .warn b{color:var(--amber);}
+.tagline{color:var(--grey);font-size:19px;margin-top:8px;}
+.tagline .c{color:var(--green);}
+.cursor{display:inline-block;width:.55em;height:1em;background:var(--green);color:transparent;vertical-align:-2px;animation:blink 1.1s steps(1) infinite;user-select:none;}
+.cursor.amb{background:var(--amber);}
+@keyframes blink{0%,55%{opacity:1}56%,100%{opacity:0}}
+
+/* ---------- boot window ---------- */
+.boot{border:3px solid var(--border);background:var(--win);box-shadow:var(--shadow);padding:10px 16px;margin:18px 0 0;font-size:19px;}
+.boot div{white-space:pre;overflow:hidden;}
+.boot .g{color:var(--green);}
+.boot .a{color:var(--amber);}
+.boot .k{color:var(--grey);}
+
+/* ---------- panel chrome ---------- */
+.panel{
+  border:3px solid var(--border);background:var(--win);
+  box-shadow:var(--shadow);image-rendering:pixelated;
+  transition:border-color .15s,box-shadow .15s;
+}
+.panel:hover{border-color:#3d4650;}
+.panel.focus{border-color:var(--green);box-shadow:4px 4px 0 var(--green);}
+.panel.errfocus{border-color:var(--red);box-shadow:4px 4px 0 var(--red);animation:shake .28s steps(2);}
+@keyframes shake{0%{transform:translate(0,0)}25%{transform:translate(-3px,0)}50%{transform:translate(3px,0)}75%{transform:translate(-2px,0)}100%{transform:translate(0,0)}}
+.titlebar{
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  background:var(--win-dark);border-bottom:3px solid var(--border);
+  padding:8px 12px;font-family:var(--f-pix);font-size:9px;letter-spacing:1px;text-transform:uppercase;
+}
+.dot{width:9px;height:9px;flex:none;image-rendering:pixelated;}
+.dot.g{background:var(--green);}
+.dot.a{background:var(--amber);}
+.dot.r{background:var(--red);}
+.dot.cy{background:var(--cyan);}
+.tb-title{color:#E6EDF3;}
+.tb-right{margin-left:auto;display:flex;gap:14px;color:var(--grey);}
+.tb-right .ok{color:var(--green);}
+.tb-right .no{color:var(--red);}
+.body{padding:14px;}
+
+/* ---------- buttons ---------- */
+.btn{
+  font-family:var(--f-pix);font-size:9px;letter-spacing:1px;text-transform:uppercase;
+  background:var(--win);color:var(--green);border:2px solid var(--green);
+  padding:8px 12px;cursor:pointer;image-rendering:pixelated;
+  box-shadow:3px 3px 0 #000;transition:all .08s;
+  display:inline-flex;align-items:center;gap:7px;user-select:none;
+}
+.btn:hover{background:var(--green);color:var(--void);}
+.btn:active{transform:translate(3px,3px);box-shadow:0 0 0 #000;}
+.btn.amber{color:var(--amber);border-color:var(--amber);}
+.btn.amber:hover{background:var(--amber);color:var(--void);}
+.btn.grey{color:var(--grey);border-color:var(--border);}
+.btn.grey:hover{background:var(--grey);color:var(--void);}
+.tgl{color:var(--grey);border-color:var(--border);}
+.tgl:hover{background:var(--grey);color:var(--void);}
+.tgl.on{color:var(--green);border-color:var(--green);}
+.tgl.on:hover{background:var(--green);}
+
+/* ---------- workspace grid ---------- */
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px;align-items:start;}
+@media(max-width:900px){.grid{grid-template-columns:1fr;}}
+
+textarea#input{
+  width:100%;min-height:330px;resize:vertical;
+  background:transparent;border:none;outline:none;color:var(--cyan);
+  font-family:var(--f-term);font-size:20px;line-height:1.5;caret-color:var(--green);
+  display:block;
+}
+textarea#input::placeholder{color:#5a6472;}
+.hint{color:var(--grey);font-size:17px;margin-top:8px;}
+.hint .k{color:var(--amber);}
+
+/* ---------- history chips ---------- */
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;}
+.chip{
+  font-family:var(--f-term);font-size:17px;color:var(--grey);
+  border:2px solid var(--border);background:var(--win-dark);padding:3px 10px;cursor:pointer;
+}
+.chip:hover{color:var(--green);border-color:var(--green);}
+.rowlabel{font-family:var(--f-pix);font-size:8px;color:var(--grey);letter-spacing:1px;align-self:center;opacity:.7;}
+
+/* ---------- tabs ---------- */
+.tabs{display:flex;flex-wrap:wrap;}
+.tab{
+  font-family:var(--f-pix);font-size:9px;letter-spacing:1px;text-transform:uppercase;
+  padding:9px 14px;cursor:pointer;color:var(--grey);background:transparent;border:none;
+  border-right:3px solid var(--border);border-bottom:3px solid transparent;
+}
+.tab:hover{color:#E6EDF3;background:var(--win-dark);}
+.tab.on{color:var(--green);background:var(--win);border-bottom-color:var(--green);}
+
+/* ---------- output ---------- */
+.toolbar{border-bottom:3px solid var(--border);background:var(--win-dark);padding:8px 12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+.toolbar .spacer{margin-left:auto;}
+pre#out{
+  margin:0;padding:14px;min-height:330px;overflow:auto;max-height:560px;
+  font-family:var(--f-term);font-size:20px;line-height:1.5;white-space:pre;
+  background:repeating-linear-gradient(to bottom,rgba(0,0,0,0) 0 2px,rgba(0,0,0,.10) 2px 4px);
+  image-rendering:pixelated;
+}
+.tok-kw{color:var(--amber);}
+.tok-ty{color:var(--green);}
+.tok-name{color:#E6EDF3;}
+.tok-str{color:var(--cyan);}
+.tok-num{color:var(--purple);}
+.tok-cmt{color:var(--grey);}
+.tok-pun{color:var(--grey);}
+.out-empty{color:var(--grey);}
+
+/* ---------- status bars ---------- */
+.errbar{
+  display:none;margin-top:10px;border:2px solid var(--red);background:#1a0d0d;
+  color:var(--red);padding:9px 12px;font-size:18px;box-shadow:3px 3px 0 #000;
+  animation:slidein .18s steps(4);
+}
+.errbar.show{display:block;}
+.errbar b{font-family:var(--f-pix);font-size:9px;letter-spacing:1px;display:block;margin-bottom:3px;}
+.okbar{
+  display:none;margin-top:10px;border:2px solid var(--green);background:#0d1a12;
+  color:var(--green);padding:8px 12px;font-size:18px;box-shadow:3px 3px 0 #000;
+}
+.okbar.show{display:block;}
+@keyframes slidein{from{transform:translateY(-6px);opacity:0}to{transform:translateY(0);opacity:1}}
+.statrow{display:flex;flex-wrap:wrap;gap:10px 24px;margin-top:10px;color:var(--grey);font-family:var(--f-pix);font-size:9px;letter-spacing:1px;}
+.statrow b{color:var(--amber);font-weight:400;}
+
+/* ---------- toast ---------- */
+#toast{
+  position:fixed;left:50%;bottom:64px;transform:translate(-50%,20px);
+  z-index:60;opacity:0;pointer-events:none;transition:all .22s steps(4);
+  font-family:var(--f-pix);font-size:9px;letter-spacing:1px;text-transform:uppercase;
+}
+#toast.show{opacity:1;transform:translate(-50%,0);}
+#toast .in{background:var(--green);color:var(--void);border:2px solid #000;box-shadow:4px 4px 0 #000;padding:10px 16px;}
+
+/* ---------- bottom status bar ---------- */
+.bottombar{
+  position:fixed;left:0;right:0;bottom:0;z-index:30;
+  background:var(--win-dark);border-top:3px solid var(--border);
+  display:flex;flex-wrap:wrap;gap:6px 22px;align-items:center;
+  padding:7px 16px;font-family:var(--f-pix);font-size:9px;letter-spacing:1px;color:var(--grey);
+  text-transform:uppercase;
+}
+.bottombar b{color:var(--green);font-weight:400;}
+.bottombar .r{margin-left:auto;display:flex;gap:18px;}
+.dotgrid{display:inline-flex;gap:3px;vertical-align:middle;}
+.dotgrid i{width:6px;height:6px;background:var(--green);display:block;animation:blink 1.4s steps(1) infinite;}
+.dotgrid i:nth-child(2){animation-delay:.2s}
+.dotgrid i:nth-child(3){animation-delay:.4s}
+
+::selection{background:var(--green);color:var(--void);}
+*::-webkit-scrollbar{width:12px;height:12px;}
+*::-webkit-scrollbar-track{background:var(--win-dark);}
+*::-webkit-scrollbar-thumb{background:var(--border);border:2px solid var(--win-dark);}
+*::-webkit-scrollbar-thumb:hover{background:var(--green);}
+@media(max-width:600px){
+  body{font-size:18px;}
+  pre#out{font-size:17px;min-height:240px;}
+  textarea#input{min-height:240px;font-size:18px;}
+  .metrics{width:100%;margin-left:0;}
+  .wrap{padding:12px 10px 92px;}
+}
+</style>
+</head>
+<body>
+<canvas id="stars" aria-hidden="true"></canvas>
+
+<div class="wrap">
+
+  <header>
+    <div class="hrow">
+      <div class="logo">
+        <svg class="sprite" viewBox="0 0 8 8" shape-rendering="crispEdges" aria-hidden="true">
+          <rect width="8" height="8" fill="#0A0E14"/>
+          <rect x="1" y="1" width="6" height="6" fill="#30363D"/>
+          <rect x="2" y="2" width="1" height="1" fill="#00FF66"/>
+          <rect x="5" y="2" width="1" height="1" fill="#00FF66"/>
+          <rect x="2" y="4" width="4" height="1" fill="#FFB000"/>
+          <rect x="3" y="5" width="2" height="1" fill="#FFB000"/>
+        </svg>
+        TYPEFORGE <span class="amber">v1.0</span>
+      </div>
+      <div class="metrics">
+        <span>MEM: <b>64K</b></span>
+        <span>SYS: <b>ONLINE</b></span>
+        <span class="warn">MODE: <b>LOCAL</b></span>
+        <span>CPU: <b>Z-80</b></span>
+      </div>
+    </div>
+    <div class="tagline">$ paste_json --emit <span class="c">typescript</span> | <span class="c">go</span> | <span class="c">python</span> | <span class="c">zod</span> <span class="cursor">▋</span></div>
+  </header>
+
+  <div class="boot" id="boot" aria-hidden="true"></div>
+
+  <div class="grid">
+
+    <!-- ============ INPUT ============ -->
+    <section class="panel" id="pIn">
+      <div class="titlebar">
+        <span class="dot g"></span><span class="dot a"></span><span class="dot r"></span>
+        <span class="tb-title">stdin // api_response.json</span>
+        <span class="tb-right"><span id="inBytes">0 BYTES</span></span>
+      </div>
+      <div class="body">
+        <textarea id="input" spellcheck="false" autocomplete="off" autocapitalize="off"
+          placeholder='{"user_id": 42, "name": "Ada Lovelace", "email": null, "tags": ["admin", "beta"], "address": {"city": "London", "zip": "EC1A"}}' aria-label="JSON input"></textarea>
+        <div class="hint">⌨ <span class="k">CTRL+ENTER</span> → forge · auto-forges as you type · nothing leaves your machine</div>
+        <div class="chips" id="samplesRow">
+          <span class="rowlabel">SAMPLES ▸</span>
+          <button class="chip" data-sample="0" title="load sample payload">◈ user+orders</button>
+          <button class="chip" data-sample="1" title="load sample payload">◈ repo+owner</button>
+          <button class="chip" data-sample="2" title="load sample payload">◈ todos[]</button>
+          <button class="chip" data-sample="3" title="load sample payload">◈ payment</button>
+          <button class="chip" data-sample="4" title="load sample payload">◈ weather+list</button>
+        </div>
+        <div class="chips" id="chips"></div>
+        <div class="errbar" id="errIn" role="alert"></div>
+        <div class="statrow">
+          <span>▚ NODES: <b id="stNodes">0</b></span>
+          <span>▚ DEPTH: <b id="stDepth">0</b></span>
+          <span>▚ ARRAYS: <b id="stArr">0</b></span>
+          <span>▚ PARSE: <b id="stTime">0.0ms</b></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ OUTPUT ============ -->
+    <section class="panel" id="pOut">
+      <div class="titlebar">
+        <span class="dot cy"></span><span class="dot g"></span><span class="dot a"></span>
+        <span class="tb-title">stdout // types</span>
+        <span class="tb-right"><span id="outStat" class="ok">READY</span></span>
+      </div>
+      <div class="tabs" id="tabs">
+        <button class="tab on" data-lang="ts">TypeScript</button>
+        <button class="tab" data-lang="go">Go</button>
+        <button class="tab" data-lang="py">Python</button>
+        <button class="tab" data-lang="pyd">Pydantic</button>
+        <button class="tab" data-lang="rs">Rust</button>
+        <button class="tab" data-lang="zod">Zod</button>
+      </div>
+      <div class="toolbar">
+        <button class="btn" id="btnCopy">▣ copy</button>
+        <button class="btn" id="btnDl">▼ save</button>
+        <button class="btn grey" id="btnSwap">⇄ round-trip</button>
+        <label class="btn amber" id="btnFileWrap">▲ load .json<input type="file" id="fileIn" accept=".json,.txt,application/json" hidden></label>
+        <span class="spacer"></span>
+        <button class="btn grey tgl on" id="tglNull"  title="TS/Zod: mark null-able fields optional · Rust: Option<T>">?null</button>
+        <button class="btn grey tgl"      id="tglExp"  title="TS/Zod: export keyword · Rust: add Clone to derives">export</button>
+        <button class="btn grey tgl"      id="tglPtr"  title="Go: pointers for null-able fields (*string)">*ptr</button>
+        <button class="btn grey tgl"      id="tglReq"  title="Drop fields that are null in every record (no type info)">req</button>
+      </div>
+      <pre id="out" tabindex="0" aria-live="polite"><span class="out-empty">▒▒ awaiting stdin ▒▒
+
+  1 ▸ paste a JSON payload on the left
+  2 ▸ types forge automatically (or hit CTRL+ENTER)
+  3 ▸ copy straight into your codebase
+
+  $ tail -f /dev/null <span class="cursor amb">▋</span></span></pre>
+      <div class="okbar" id="okOut"></div>
+      <div class="statrow" style="padding:0 14px 12px;">
+        <span>▚ TYPES: <b id="stTypes">0</b></span>
+        <span>▚ FIELDS: <b id="stFields">0</b></span>
+        <span>▚ LINES: <b id="stLines">0</b></span>
+        <span>▚ NULLS: <b id="stNulls">OPTIONAL</b></span>
+      </div>
+    </section>
+
+  </div>
+</div>
+
+<div id="toast" role="status"><div class="in" id="toastMsg">copied!</div></div>
+
+<div class="bottombar">
+  <span class="dotgrid" aria-hidden="true"><i></i><i></i><i></i></span>
+  <span>UPLINK: <b>SECURE</b> · 0 bytes leave this device</span>
+  <span class="r"><span>PWR: <b id="pwr">█▇▆▅</b></span><span id="clock">--:--:--</span></span>
+</div>
+
+<noscript><div style="position:fixed;inset:0;background:#0A0E14;color:#00FF66;padding:40px;font-family:monospace;z-index:99;">ENABLE JAVASCRIPT TO BOOT TYPEFORGE.</div></noscript>
+
+<script>
+"use strict";
+/*__ENGINE_START__*/
+/* ============================================================
+   TYPE ENGINE — pure functions, no DOM. Testable headlessly.
+   Pipeline: JSON value → model tree → named type registry →
+   per-language emitters (TypeScript / Go / Python).
+   ============================================================ */
+var ROOT_NAME='Root';
+var NAME_TAKEN={};
+
+function pascal(s){
+  s=String(s==null?'':s);
+  var parts=s.replace(/[^a-zA-Z0-9]+/g,' ').split(' ').filter(Boolean);
+  if(!parts.length)return'';
+  var out=parts.map(function(p){return p.charAt(0).toUpperCase()+p.slice(1);}).join('');
+  if(/^[0-9]/.test(out))out='N'+out;
+  return out;
+}
+/* naive singularizer: orders→Order, items→Item, but keeps status/address */
+function singular(s){
+  s=String(s);
+  if(/ies$/.test(s)&&s.length>4)return s.slice(0,-3)+'y';
+  if(/(ches|shes|sses|xes|zes)$/.test(s))return s.slice(0,-2);
+  if(/(ss|us|is)$/.test(s))return s;
+  if(/s$/.test(s)&&s.length>3)return s.slice(0,-1);
+  return s;
+}
+function uniqueName(base){
+  base=base||'Root';
+  var n=base,i=2;
+  while(NAME_TAKEN[n]){n=base+i;i++;}
+  NAME_TAKEN[n]=true;
+  return n;
+}
+function suggestName(key,inArray){
+  if(key)return pascal(singular(String(key)));
+  return inArray?ROOT_NAME+'Item':ROOT_NAME;
+}
+
+/* ---- model construction ------------------------------------
+   model = { kind, nullable, name?, sug?, children?, item?, kinds? }
+   Array elements are built speculatively (noReg): they may be
+   merged away, so they don't claim names. After unify(), fixNames
+   assigns names to surviving object models. This keeps output
+   names clean: Order, Item — never Order3, Item3.
+   ------------------------------------------------------------ */
+function buildModel(v,key,inArray,noReg){
+  if(v===null)return{kind:'null',nullable:false};
+  if(Array.isArray(v)){
+    if(v.length===0)return{kind:'array',nullable:false,item:{kind:'any',nullable:false,sug:'Any'}};
+    var models=[],i;
+    for(i=0;i<v.length;i++)models.push(buildModel(v[i],key,true,true));
+    return{kind:'array',nullable:false,item:unify(models,key,true)};
+  }
+  switch(typeof v){
+    case'string':return{kind:'string',nullable:false};
+    case'number':return{kind:(Number.isInteger(v)?'int':'float'),nullable:false};
+    case'boolean':return{kind:'bool',nullable:false};
+    case'object':{
+      var children={},sug=suggestName(key,inArray);
+      for(var k in v)children[k]=buildModel(v[k],k,false,noReg);
+      var m={kind:'object',nullable:false,children:children,sug:sug,name:null};
+      if(!noReg)m.name=uniqueName(sug);
+      return m;
+    }
+    default:return{kind:'any',nullable:false};
+  }
+}
+/* assign names to any object models that were built speculatively */
+function fixNames(m){
+  if(!m)return;
+  if(m.kind==='object'){
+    if(!m.name)m.name=uniqueName(m.sug||'Object');
+    for(var k in m.children)fixNames(m.children[k]);
+  }else if(m.kind==='array'){
+    fixNames(m.item);
+  }
+}
+/* unify several models (array elements / variants of a field) */
+function unify(models,key,sing){
+  var nonNull=[],i;
+  for(i=0;i<models.length;i++)if(models[i].kind!=='null')nonNull.push(models[i]);
+  var hadNull=nonNull.length!==models.length;
+  var m;
+  if(nonNull.length===0)m={kind:'null',nullable:false};
+  else if(nonNull.length===1)m=nonNull[0];
+  else{
+    var allObj=true,allArr=true;
+    for(i=0;i<nonNull.length;i++){
+      if(nonNull[i].kind!=='object')allObj=false;
+      if(nonNull[i].kind!=='array')allArr=false;
+    }
+    if(allObj)m=mergeObjs(nonNull,key,sing);
+    else if(allArr){
+      var items=[];
+      for(i=0;i<nonNull.length;i++)items.push(nonNull[i].item);
+      m={kind:'array',nullable:false,item:unify(items,key,sing)};
+    }else{
+      var kinds=[];
+      for(i=0;i<nonNull.length;i++){
+        var kd=nonNull[i].kind;
+        if(kd==='int'&&kinds.indexOf('float')>=0)continue;
+        if(kd==='float'){
+          var ix=kinds.indexOf('int');
+          if(ix>=0)kinds[ix]='float';
+          else if(kinds.indexOf('float')<0)kinds.push('float');
+          continue;
+        }
+        if(kinds.indexOf(kd)<0)kinds.push(kd);
+      }
+      m=kinds.length===1?{kind:kinds[0],nullable:false}:{kind:'union',nullable:false,kinds:kinds};
+    }
+  }
+  if(hadNull&&m.kind!=='null'){m=Object.assign({},m);m.nullable=true;}
+  return m;
+}
+/* merge heterogeneous objects from an array: union of keys, missing → nullable */
+function mergeObjs(models,key,sing){
+  var total=models.length,seen={};
+  for(var i=0;i<total;i++){
+    var ch=models[i].children;
+    for(var k in ch)(seen[k]=seen[k]||[]).push(ch[k]);
+  }
+  var children={};
+  for(var k2 in seen){
+    var list=seen[k2];
+    var missing=list.length!==total;
+    var u=unify(list,k2,false);
+    if(missing&&u.kind!=='null'){u=Object.assign({},u);u.nullable=true;}
+    children[k2]=u;
+  }
+  return{kind:'object',nullable:false,children:children,name:null,sug:suggestName(key,sing)};
+}
+
+/* root type is always named ROOT_NAME; children named from their keys */
+function analyze(data){
+  NAME_TAKEN={};
+  ROOT_NAME='Root';
+  NAME_TAKEN[ROOT_NAME]=true;
+  var root;
+  if(data&&typeof data==='object'&&!Array.isArray(data)){
+    root={kind:'object',nullable:false,children:{},name:ROOT_NAME};
+    for(var k in data)root.children[k]=buildModel(data[k],k,false,false);
+  }else{
+    root=buildModel(data,null,false,false);
+    root.name=ROOT_NAME;
+  }
+  /* single naming pass over the final tree, parents before children,
+     so speculative models that were merged away never consume names */
+  fixNames(root);
+  return{root:root,name:ROOT_NAME};
+}
+function collectObjects(m,acc,seen){
+  if(!m||seen.indexOf(m)>=0)return;
+  seen.push(m);
+  if(m.kind==='object'){
+    acc.push(m);
+    for(var k in m.children)collectObjects(m.children[k],acc,seen);
+  }else if(m.kind==='array'){
+    collectObjects(m.item,acc,seen);
+  }
+}
+/* post-order: children before parents — required by emitters whose
+   runtime evaluates declarations eagerly (Python classes, JS const).
+   TS interfaces hoist, so only PY/Zod need this ordering. */
+function collectPost(m,acc,seen){
+  if(!m||seen.indexOf(m)>=0)return;
+  seen.push(m);
+  if(m.kind==='object'){
+    for(var k in m.children)collectPost(m.children[k],acc,seen);
+    acc.push(m);
+  }else if(m.kind==='array'){
+    collectPost(m.item,acc,seen);
+  }
+}
+
+/* ================= EMITTER: TypeScript ================= */
+function emitTS(root,o){
+  o=o||{};
+  var optNull=o.optNull!==false,exportKw=!!o.exportKw;
+  var ex=exportKw?'export ':'';
+  var objs=[];collectObjects(root,objs,[]);
+  function tsKind(k){
+    switch(k){
+      case'string':return'string';
+      case'int':case'float':return'number';
+      case'bool':return'boolean';
+      case'null':return'null';
+      default:return'unknown'; /* any, object, array inside unions */
+    }
+  }
+  function tsType(m){
+    var t;
+    if(m.kind==='union'){
+      var seen=[],i;
+      for(i=0;i<m.kinds.length;i++){var tk=tsKind(m.kinds[i]);if(seen.indexOf(tk)<0)seen.push(tk);}
+      t=seen.join(' | ');
+    }else if(m.kind==='array'){
+      t=tsType(m.item);
+      if(t.indexOf('|')>=0)t='('+t+')';
+      t=t+'[]';
+    }else if(m.kind==='object'){
+      t=m.name;
+    }else{
+      t=tsKind(m.kind);
+    }
+    if(m.nullable)t+=' | null';
+    return t;
+  }
+  function fieldLine(k,m){
+    var name=/^[A-Za-z_$][A-Za-z0-9_$]*$/.test(k)?k:JSON.stringify(k);
+    var isOpt=optNull&&(m.nullable||m.kind==='null');
+    return'  '+name+(isOpt?'?':'')+': '+tsType(m)+';';
+  }
+  var nested=[];
+  for(var i=0;i<objs.length;i++){
+    var m=objs[i];
+    if(m===root)continue;
+    nested.push(ex+'interface '+m.name+' {');
+    var ks=Object.keys(m.children);
+    if(!ks.length)nested.push('  [key: string]: unknown;');
+    else for(var j=0;j<ks.length;j++)nested.push(fieldLine(ks[j],m.children[ks[j]]));
+    nested.push('}');
+    nested.push('');
+  }
+  var head=[];
+  if(root.kind==='object'){
+    head.push(ex+'interface '+root.name+' {');
+    var ks0=Object.keys(root.children);
+    if(!ks0.length)head.push('  [key: string]: unknown;');
+    else for(var j2=0;j2<ks0.length;j2++)head.push(fieldLine(ks0[j2],root.children[ks0[j2]]));
+    head.push('}');
+  }else if(root.kind==='array'){
+    head.push(ex+'type '+root.name+' = '+tsType(root.item)+'[];');
+  }else{
+    head.push(ex+'type '+root.name+' = '+tsType(root)+';');
+  }
+  return head.join('\n')+(nested.length?'\n\n'+nested.join('\n').replace(/\n{3,}/g,'\n\n'):'')+'\n';
+}
+
+/* ================= EMITTER: Go ================= */
+function emitGO(root,o){
+  o=o||{};
+  var ptr=!!o.ptr;
+  var objs=[];collectObjects(root,objs,[]);
+  function goType(m){
+    switch(m.kind){
+      case'string':return'string';
+      case'int':return'int64';
+      case'float':return'float64';
+      case'bool':return'bool';
+      case'null':case'any':return'interface{}';
+      case'union':{
+        var k=m.kinds,every=function(f){for(var i=0;i<k.length;i++)if(!f(k[i]))return false;return true;};
+        if(every(function(x){return x==='string';}))return'string';
+        if(every(function(x){return x==='int'||x==='float';}))return'float64';
+        if(every(function(x){return x==='bool';}))return'bool';
+        return'interface{}';
+      }
+      case'array':{
+        var it=goType(m.item);
+        if(m.item.nullable&&ptr&&it!=='interface{}'&&it.charAt(0)!=='*')it='*'+it;
+        return'[]'+it;
+      }
+      case'object':return m.name;
+      default:return'interface{}';
+    }
+  }
+  function fieldIdent(k,idx){return pascal(k)||'Field'+(idx+1);}
+  function structBlock(m,name){
+    var lines=['type '+name+' struct {'];
+    var ks=Object.keys(m.children);
+    if(!ks.length)lines.push('\t_ struct{} `json:"-"` // empty object');
+    for(var i=0;i<ks.length;i++){
+      var k=ks[i],c=m.children[k];
+      var ty=goType(c);
+      if((c.nullable||c.kind==='null')&&ptr&&ty!=='interface{}'&&ty.charAt(0)!=='*')ty='*'+ty;
+      var tag='`json:"'+k;
+      if(c.nullable||c.kind==='null')tag+=',omitempty';
+      tag+='"`';
+      var note=(c.kind==='union'&&ty==='interface{}')?' // union: '+c.kinds.join(' | '):'';
+      lines.push('\t'+fieldIdent(k,i)+'\t'+ty+'\t'+tag+note);
+    }
+    lines.push('}');
+    return lines.join('\n');
+  }
+  var nested=[];
+  for(var i=0;i<objs.length;i++){
+    var m=objs[i];
+    if(m===root)continue;
+    nested.push(structBlock(m,m.name));
+    nested.push('');
+  }
+  var head;
+  if(root.kind==='object')head=structBlock(root,root.name);
+  else if(root.kind==='array')head='type '+root.name+' []'+goType(root.item);
+  else head='type '+root.name+' '+goType(root);
+  return head+(nested.length?'\n\n'+nested.join('\n'):'')+'\n';
+}
+
+/* ================= EMITTER: Python ================= */
+var PY_KW=/^(False|None|True|and|as|assert|async|await|break|class|continue|def|del|elif|else|except|finally|for|from|global|if|import|in|is|lambda|nonlocal|not|or|pass|raise|return|try|while|with|yield|match|case)$/;
+function pyIdent(k){
+  var s=String(k);
+  if(!/^[A-Za-z_]/.test(s))s='field_'+s;
+  s=s.replace(/[^A-Za-z0-9_]/g,'_').replace(/_+$/,'');
+  if(!s)s='field';
+  if(PY_KW.test(s))s=s+'_';
+  return s;
+}
+function emitPY(root,o){
+  o=o||{};
+  var imports={};
+  function pyKind(k){
+    switch(k){case'string':return'str';case'int':return'int';case'float':return'float';case'bool':return'bool';case'null':return'None';default:return null;}
+  }
+  function pyType(m){
+    switch(m.kind){
+      case'string':return'str';
+      case'int':return'int';
+      case'float':return'float';
+      case'bool':return'bool';
+      case'null':return'None';
+      case'any':imports.Any=true;return'Any';
+      case'union':{
+        var parts=[],ok=true,i;
+        for(i=0;i<m.kinds.length;i++){var p=pyKind(m.kinds[i]);if(p===null){ok=false;break;}parts.push(p);}
+        if(!ok){imports.Any=true;return'Any';}
+        parts=parts.filter(function(x,i2,a){return a.indexOf(x)===i2;});
+        if(parts.length===1)return parts[0];
+        imports.Union=true;
+        return'Union['+parts.join(', ')+']';
+      }
+      case'array':imports.List=true;return'List['+pyType(m.item)+']';
+      case'object':return m.name;
+      default:imports.Any=true;return'Any';
+    }
+  }
+  function fieldLine(k,m,indent){
+    var renamed=!/^[A-Za-z_][A-Za-z0-9_]*$/.test(k)||PY_KW.test(k);
+    var name=renamed?pyIdent(k):k;
+    var t=pyType(m);
+    var opt=m.nullable||m.kind==='null';
+    if(opt&&m.kind!=='null'){imports.Optional=true;t='Optional['+t+']';}
+    var comment=renamed?'  # json key: "'+String(k).replace(/"/g,'\\"')+'"':'';
+    return indent+name+': '+t+(opt?' = None':'')+comment;
+  }
+  function dataclassBlock(m,name){
+    var lines=['@dataclass','class '+name+':'];
+    var ks=Object.keys(m.children);
+    if(!ks.length){lines.push('    pass');return lines.join('\n');}
+    var req=[],opt=[];
+    for(var i=0;i<ks.length;i++){
+      var c=m.children[ks[i]];
+      ((c.nullable||c.kind==='null')?opt:req).push(ks[i]);
+    }
+    var ordered=req.concat(opt); /* dataclass: defaults must come last */
+    for(var j=0;j<ordered.length;j++)lines.push(fieldLine(ordered[j],m.children[ordered[j]],'    '));
+    return lines.join('\n');
+  }
+  /* dependencies first: post-order — class-body annotations are
+     evaluated eagerly, so referenced classes must already exist */
+  var ordered=[];collectPost(root,ordered,[]);
+  var blocks=[];
+  for(var i=0;i<ordered.length;i++){
+    var m=ordered[i];
+    if(m===root)continue;
+    blocks.push(dataclassBlock(m,m.name));
+  }
+  var tail=[];
+  if(root.kind==='object'){
+    tail.push(dataclassBlock(root,root.name));
+  }else if(root.kind==='array'){
+    imports.List=true;
+    var it=pyType(root.item);
+    if(root.item.nullable){imports.Optional=true;it='Optional['+it+']';}
+    tail.push('# Root payload: JSON array');
+    tail.push(root.name+' = List['+it+']');
+  }else{
+    tail.push('# Root payload: scalar ('+root.kind+')');
+    tail.push(root.name+' = '+pyType(root));
+  }
+  var impKeys=['Any','List','Optional','Union'].filter(function(x){return imports[x];});
+  var out='';
+  if(impKeys.length)out+='from typing import '+impKeys.join(', ')+'\n\n';
+  out+=blocks.concat(tail).join('\n\n');
+  return out+'\n';
+}
+/* ================= EMITTER: Zod ================= */
+function emitZOD(root,o){
+  o=o||{};
+  var optNull=o.optNull!==false,ex=o.exportKw?'export ':'';
+  function zPrim(k){
+    switch(k){
+      case'string':return'z.string()';
+      case'int':return'z.number().int()';
+      case'float':return'z.number()';
+      case'bool':return'z.boolean()';
+      case'null':return'z.null()';
+      default:return'z.unknown()';
+    }
+  }
+  function zType(m){
+    var t;
+    if(m.kind==='union'){
+      var seen=[],i;
+      for(i=0;i<m.kinds.length;i++){var z=zPrim(m.kinds[i]);if(seen.indexOf(z)<0)seen.push(z);}
+      t=seen.length===1?seen[0]:'z.union(['+seen.join(', ')+'])';
+    }else if(m.kind==='array'){
+      t='z.array('+zType(m.item)+')';
+    }else if(m.kind==='object'){
+      t=m.name+'Schema';
+    }else{
+      t=zPrim(m.kind);
+    }
+    if(m.nullable)t+='.nullable()';
+    return t;
+  }
+  function fieldLine(k,m){
+    var name=/^[A-Za-z_$][A-Za-z0-9_$]*$/.test(k)?k:JSON.stringify(k);
+    var t=zType(m);
+    if(optNull&&(m.nullable||m.kind==='null'))t+='.optional()';
+    return'  '+name+': '+t+',';
+  }
+  function schemaBlock(m,name){
+    var ks=Object.keys(m.children);
+    if(!ks.length)return ex+'const '+name+'Schema = z.object({});';
+    var lines=[ex+'const '+name+'Schema = z.object({'];
+    for(var i=0;i<ks.length;i++)lines.push(fieldLine(ks[i],m.children[ks[i]]));
+    lines.push('});');
+    return lines.join('\n');
+  }
+  /* dependencies first: post-order, root last — const TDZ is real */
+  var ordered=[];collectPost(root,ordered,[]);
+  var blocks=[];
+  for(var i=0;i<ordered.length;i++){
+    var m=ordered[i];
+    if(m===root)continue;
+    blocks.push(schemaBlock(m,m.name));
+  }
+  var tail=[];
+  if(root.kind==='object')tail.push(schemaBlock(root,root.name));
+  else if(root.kind==='array')tail.push(ex+'const '+root.name+'Schema = z.array('+zType(root.item)+');');
+  else tail.push(ex+'const '+root.name+'Schema = '+zType(root)+';');
+  var tailStr=tail.join('\n')+'\n'+ex+'type '+root.name+' = z.infer<typeof '+root.name+'Schema>;';
+  return "import { z } from 'zod';\n\n"+blocks.concat([tailStr]).join('\n\n')+'\n';
+}
+/* ================= EMITTER: Rust (serde) ================= */
+function emitRS(root,o){
+  o=o||{};
+  var optNull=o.optNull!==false,ex=!!o.exportKw;
+  var objs=[];collectObjects(root,objs,[]);
+  var rsPrim={string:'String',int:'i64',float:'f64',bool:'bool',null:'serde_json::Value',any:'serde_json::Value'};
+  function rsType(m){
+    var t;
+    if(m.kind==='union'){
+      var every=function(f){for(var i=0;i<m.kinds.length;i++)if(!f(m.kinds[i]))return false;return true;};
+      if(every(function(x){return x==='string';}))t='String';
+      else if(every(function(x){return x==='int'||x==='float';}))t='f64';
+      else if(every(function(x){return x==='bool';}))t='bool';
+      else t='serde_json::Value';
+    }else if(m.kind==='array'){
+      t='Vec<'+rsType(m.item)+'>';
+    }else if(m.kind==='object'){
+      t=m.name;
+    }else{
+      t=rsPrim[m.kind]||'serde_json::Value';
+    }
+    return t;
+  }
+  function fieldIdent(k,idx){return pascal(k)||'Field'+(idx+1);}
+  function structBlock(m,name){
+    var lines=[];
+    if(ex)lines.push('#[derive(Debug, Clone, Serialize, Deserialize)]');
+    else lines.push('#[derive(Debug, Serialize, Deserialize)]');
+    lines.push('pub struct '+name+' {');
+    var ks=Object.keys(m.children);
+    if(!ks.length){lines.push('    _marker: (),');}
+    for(var i=0;i<ks.length;i++){
+      var k=ks[i],c=m.children[ks[i]];
+      var ty=rsType(c);
+      var attrs=[];
+      if(c.nullable||c.kind==='null')attrs.push('skip_serializing_if = "Option::is_none"');
+      if(k!==fieldIdent(k,i))attrs.push('rename = '+JSON.stringify(k));
+      var line='    pub '+fieldIdent(k,i)+': ';
+      if(c.nullable||c.kind==='null')line+='Option<'+ty+'>,';
+      else line+=ty+',';
+      if(attrs.length)lines.push('    #[serde('+attrs.join(', ')+')]');
+      lines.push(line);
+    }
+    lines.push('}');
+    return lines.join('\n');
+  }
+  /* TS-style hoisting is valid in Rust, but keep parents-first order
+     so the output reads top-down like the TS emitter */
+  var nested=[];
+  for(var i=0;i<objs.length;i++){
+    var m=objs[i];
+    if(m===root)continue;
+    nested.push(structBlock(m,m.name));
+    nested.push('');
+  }
+  var head=[];
+  if(root.kind==='object')head.push(structBlock(root,root.name));
+  else if(root.kind==='array')head.push('pub type '+root.name+' = Vec<'+rsType(root.item)+'>;');
+  else head.push('pub type '+root.name+' = '+rsType(root)+';');
+  return head.join('\n')+(nested.length?'\n\n'+nested.join('\n'):'')+'\n';
+}
+
+/* ================= EMITTER: Pydantic v2 ================= */
+function emitPYD(root,o){
+  o=o||{};
+  var optNull=o.optNull!==false;
+  var imports={model:false,field:false,past:false,any:false,bjv:false};
+  var objs=[];collectObjects(root,objs,[]);
+  function pydKind(k){
+    switch(k){case'string':return'str';case'int':return'int';case'float':return'float';case'bool':return'bool';case'null':return'None';default:return null;}
+  }
+  function pydType(m){
+    switch(m.kind){
+      case'string':return'str';
+      case'int':return'int';
+      case'float':return'float';
+      case'bool':return'bool';
+      case'null':imports.bjv=true;return'JsonValue';
+      case'any':imports.any=true;return'Any';
+      case'union':{
+        var parts=[],ok=true,i;
+        for(i=0;i<m.kinds.length;i++){var p=pydKind(m.kinds[i]);if(p===null){ok=false;break;}parts.push(p);}
+        if(!ok){imports.any=true;return'Any';}
+        parts=parts.filter(function(x,i2,a){return a.indexOf(x)===i2;});
+        if(parts.length===1)return parts[0];
+        return parts.join(' | ');
+      }
+      case'array':return'list['+pydType(m.item)+']';
+      case'object':return m.name;
+      default:imports.any=true;return'Any';
+    }
+  }
+  function fieldLine(k,m,indent){
+    var renamed=!/^[A-Za-z_][A-Za-z0-9_]*$/.test(k)||PY_KW.test(k);
+    var name=renamed?pyIdent(k):k;
+    var t=pydType(m);
+    var opt=m.nullable||m.kind==='null';
+    if(opt&&m.kind!=='null'){t=t+' | None';}
+    var comment=renamed?'  # json key: "'+String(k).replace(/"/g,'\\"')+'"':'';
+    if(opt){imports.field=true;return indent+name+': '+t+' = Field(default=None)'+comment;}
+    return indent+name+': '+t+comment;
+  }
+  function modelBlock(m,name){
+    imports.model=true;
+    var lines=['class '+name+'(BaseModel):'];
+    var ks=Object.keys(m.children);
+    if(!ks.length){lines.push('    pass');return lines.join('\n');}
+    for(var i=0;i<ks.length;i++)lines.push(fieldLine(ks[i],m.children[ks[i]],'    '));
+    return lines.join('\n');
+  }
+  /* dependencies first (post-order): class bodies evaluate eagerly */
+  var ordered=[];collectPost(root,ordered,[]);
+  var blocks=[];
+  for(var i=0;i<ordered.length;i++){
+    var m=ordered[i];
+    if(m===root)continue;
+    blocks.push(modelBlock(m,m.name));
+  }
+  var tail=[];
+  if(root.kind==='object')tail.push(modelBlock(root,root.name));
+  else if(root.kind==='array')tail.push('# Root payload: JSON array — validate with RootListAdapter\nRootListAdapter = RootModel[list['+pydType(root.item)+']]');
+  else tail.push('# Root payload: scalar — validate with RootScalarAdapter\nRootScalarAdapter = RootModel['+pydType(root)+']');
+  var imp=[];
+  if(imports.model)imp.push('BaseModel, RootModel');
+  if(imports.field)imp.push('Field');
+  var out='';
+  var needInit=imports.model||imports.field||imports.any||imports.bjv;
+  if(needInit)out+='from __future__ import annotations\n\n';
+  if(imp.length||imports.any||imports.bjv){
+    var pyParts=[];
+    if(imports.any)pyParts.push('Any');
+    if(imports.bjv)pyParts.push('JsonValue');
+    if(pyParts.length)out+='from typing import '+pyParts.join(', ')+'\n';
+    if(imp.length)out+='from pydantic import '+imp.join(', ')+'\n';
+    out+='\n';
+  }
+  out+=blocks.concat(tail).join('\n\n');
+  return out+'\n';
+}
+/* req-only mode: drop fields that are null in every record of an array.
+   Applied at forge time and on toggle — emitters stay pure. */
+function stripAlwaysNull(an,on){
+  if(!on||!an||!an.root)return an;
+  function st(m,skipSelf){
+    if(!m||typeof m!=='object')return m;
+    if(m.kind==='object'&&m.children){
+      for(var k in m.children)st(m.children[k],false);
+      if(!skipSelf){
+        for(var k2 in m.children){
+          if(m.children[k2].kind==='null')delete m.children[k2];
+        }
+      }
+    }else if(m.kind==='array'&&m.item){
+      st(m.item,false);
+    }
+    return m;
+  }
+  return{root:st(an.root,true),name:an.name};
+}
+function analyzeAndStrip(data,reqOnly){
+  return stripAlwaysNull(analyze(data),reqOnly);
+}
+/*__ENGINE_END__*/
+
+/* ============================================================
+   UI STATE + PIPELINE
+   ============================================================ */
+var OPT={optNull:true,exportKw:false,ptr:false,reqOnly:false};
+var LANG='ts';
+var lastAnalyzed=null;
+
+function $(id){return document.getElementById(id);}
+
+/* ---------- toast ---------- */
+var toastT=null;
+function toast(msg){
+  $('toastMsg').textContent=msg;
+  $('toast').classList.add('show');
+  clearTimeout(toastT);
+  toastT=setTimeout(function(){$('toast').classList.remove('show');},1900);
+}
+
+/* ---------- error / ok bars ---------- */
+function showErr(title,msg){
+  var e=$('errIn');
+  e.innerHTML='<b>✖ '+title+'</b>'+msg;
+  e.classList.add('show');
+  $('pIn').classList.add('errfocus');
+  $('outStat').className='no';
+  $('outStat').textContent='FAIL';
+  $('okOut').classList.remove('show');
+}
+function hideErr(){
+  $('errIn').classList.remove('show');
+  $('pIn').classList.remove('errfocus');
+}
+function parseErrorInfo(msg,raw){
+  var mm=String(msg).match(/position (\d+)/);
+  if(mm){
+    var p=Math.min(+mm[1],raw.length);
+    var before=raw.slice(0,p);
+    var line=before.split('\n').length;
+    var col=p-before.lastIndexOf('\n');
+    return'line '+line+', col '+col;
+  }
+  var lm=String(msg).match(/line (\d+) column (\d+)/);
+  if(lm)return'line '+lm[1]+', col '+lm[2];
+  return'';
+}
+function parseErrorHint(msg){
+  var m=String(msg);
+  if(/'/.test(m)&&/Unexpected token/.test(m))return' JSON strings need double quotes — single quotes are invalid.';
+  if(/Unexpected token \}/.test(m)||/Unexpected non-whitespace/.test(m))return' likely a trailing comma before a closing bracket.';
+  if(/Unexpected end/i.test(m))return' the payload looks truncated — a bracket or brace is missing.';
+  return' check trailing commas, quoting and matched brackets.';
+}
+
+/* ---------- syntax highlighting (escape first, then tokenize) ---------- */
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function span(cls,txt){return'<span class="'+cls+'">'+txt+'</span>';}
+function colorTypes(s,prims){
+  var re=new RegExp('\\b(?:'+prims.join('|')+')\\b|\\b[A-Z][A-Za-z0-9_]*\\b|[\\[\\]\\{\\}\\|\\*<>]','g');
+  var out='',last=0,m;
+  while((m=re.exec(s))!==null){
+    out+=s.slice(last,m.index);
+    var t=m[0];
+    out+=span(/^[\[\]{}\|*<>]$/.test(t)?'tok-pun':'tok-ty',t);
+    last=m.index+t.length;
+    if(re.lastIndex===m.index)re.lastIndex++;
+  }
+  return out+s.slice(last);
+}
+var PRIMS={
+  ts:['string','number','boolean','unknown','null','void'],
+  go:['string','int64','float64','bool','byte','rune','interface'],
+  py:['str','int','float','bool','None','Any','List','Optional','Union','Dict']
+};
+function hlTS(code){
+  var p=PRIMS.ts;
+  return esc(code).split('\n').map(function(line){
+    var m;
+    if(m=line.match(/^((?:export\s+)?)(interface|type)\s+([A-Za-z0-9_]+)(\s*=\s*)(.+?);?$/))
+      return span('tok-kw',m[1]+m[2])+' '+span('tok-ty',m[3])+span('tok-pun',m[4])+colorTypes(m[5],p)+';';
+    if(m=line.match(/^((?:export\s+)?)interface\s+([A-Za-z0-9_]+)\s*\{$/))
+      return span('tok-kw',m[1]+'interface')+' '+span('tok-ty',m[2])+' {';
+    if(m=line.match(/^(\s*)\[key:\s*string\](:)\s*(.+?);$/))
+      return m[1]+span('tok-pun','[key:')+' '+span('tok-ty','string')+span('tok-pun',']'+m[2])+' '+colorTypes(m[3],p)+';';
+    if(m=line.match(/^(\s*)("[^"]*"|[A-Za-z_$][\w$]*)(\?)?(\s*:\s*)(.+?);?$/))
+      return m[1]+span('tok-name',m[2])+span('tok-pun',(m[3]||'')+m[4])+colorTypes(m[5],p)+';';
+    return line;
+  }).join('\n');
+}
+function hlGO(code){
+  var p=PRIMS.go;
+  return esc(code).split('\n').map(function(line){
+    var m;
+    if(m=line.match(/^(\s*)(\/\/.*|#.*)$/))return m[1]+span('tok-cmt',m[2]);
+    if(m=line.match(/^type\s+([A-Za-z0-9_]+)\s+struct\s*\{$/))
+      return span('tok-kw','type')+' '+span('tok-ty',m[1])+' '+span('tok-kw','struct')+' {';
+    if(m=line.match(/^type\s+([A-Za-z0-9_]+)\s+(.+)$/))
+      return span('tok-kw','type')+' '+span('tok-ty',m[1])+' '+colorTypes(m[2],p);
+    if(m=line.match(/^(\t)(_|[A-Za-z0-9_]+)(\t+)([^\t`]+)(\t+)(`[^`]*`)(.*)$/)){
+      var note=m[7]?span('tok-cmt',m[7]):'';
+      return m[1]+span('tok-name',m[2])+m[3]+colorTypes(m[4],p)+m[5]+span('tok-str',m[6])+note;
+    }
+    return line;
+  }).join('\n');
+}
+function hlPY(code){
+  var p=PRIMS.py;
+  return esc(code).split('\n').map(function(line){
+    var m;
+    if(m=line.match(/^(\s*)(#.*)$/))return m[1]+span('tok-cmt',m[2]);
+    if(line==='@dataclass')return span('tok-kw',line);
+    if(m=line.match(/^(class\s+)([A-Za-z0-9_]+)(.*)$/))
+      return span('tok-kw',m[1])+span('tok-ty',m[2])+span('tok-pun',m[3]);
+    if(m=line.match(/^(from\s+)([A-Za-z0-9_.]+)(\s+import\s+)(.+)$/))
+      return span('tok-kw',m[1])+span('tok-ty',m[2])+span('tok-kw',m[3])+span('tok-str',m[4]);
+    if(m=line.match(/^(\s+)([A-Za-z_][\w_]*)(\s*:\s*)(.+?)(\s*=\s*)(.+)$/))
+      return m[1]+span('tok-name',m[2])+span('tok-pun',m[3])+colorTypes(m[4],p)+span('tok-pun',m[5])+span('tok-str',m[6]);
+    if(m=line.match(/^(\s+)([A-Za-z_][\w_]*)(\s*:\s*)(.+)$/))
+      return m[1]+span('tok-name',m[2])+span('tok-pun',m[3])+colorTypes(m[4],p);
+    if(m=line.match(/^([A-Za-z_][\w_]*)(\s*=\s*)(.+)$/))
+      return span('tok-name',m[1])+span('tok-pun',m[2])+colorTypes(m[3],p);
+    return line;
+  }).join('\n');
+}
+function colorZ(s){
+  var re=/(z\.(?:string|number|boolean|null|unknown|array|object|union|infer|int))|(\b[A-Z][A-Za-z0-9_]*\b)|([()\[\]{}|<>.,;])/g;
+  var out='',last=0,m;
+  while((m=re.exec(s))!==null){
+    out+=s.slice(last,m.index);
+    if(m[1]||m[2])out+=span('tok-ty',m[0]);
+    else out+=span('tok-pun',m[0]);
+    last=re.lastIndex;
+  }
+  return out+s.slice(last);
+}
+function hlZOD(code){
+  return esc(code).split('\n').map(function(line){
+    var m;
+    if(m=line.match(/^(import\s+.*;?)$/))return span('tok-kw',m[1]);
+    if(m=line.match(/^((?:export\s+)?)(const|type)\s+(\w+)(\s*=\s*)(.+?)(;?)$/))
+      return span('tok-kw',m[1]+m[2])+' '+span('tok-ty',m[3])+span('tok-pun',m[4])+colorZ(m[5])+(m[6]||'');
+    if(m=line.match(/^(\s*)("[^"]*"|[A-Za-z_$][\w$]*)(\s*:\s*)(.+?)(,?)$/))
+      return m[1]+span('tok-name',m[2])+span('tok-pun',m[3])+colorZ(m[4])+(m[5]||'');
+    if(line==='});')return span('tok-pun',line);
+    return line;
+  }).join('\n');
+}
+function hlRS(code){
+  var p=['String','i64','f64','bool','Vec','Option','serde_json','Value'];
+  return esc(code).split('\n').map(function(line){
+    var m;
+    if(m=line.match(/^(\s*)(#\[serde\(.*\)\])$/))return m[1]+span('tok-str',m[2]);
+    if(m=line.match(/^(\s*)(#\[derive\(.*\)\])$/))return m[1]+span('tok-kw',m[2]);
+    if(m=line.match(/^pub struct (\w+) \{$/))return span('tok-kw','pub struct')+' '+span('tok-ty',m[1])+' {';
+    if(m=line.match(/^pub type (\w+) = (.+);$/))return span('tok-kw','pub type')+' '+span('tok-ty',m[1])+' = '+colorTypes(m[2],p)+';';
+    if(m=line.match(/^(\s*)pub (\w+)(: )(.+?),$/))return m[1]+span('tok-kw','pub')+' '+span('tok-name',m[2])+span('tok-pun',m[3])+colorTypes(m[4],p)+',';
+    return line;
+  }).join('\n');
+}
+function highlight(code,lang){
+  if(lang==='go')return hlGO(code);
+  if(lang==='py')return hlPY(code);
+  if(lang==='zod')return hlZOD(code);
+  if(lang==='rs')return hlRS(code);
+  if(lang==='pyd')return hlPY(code);
+  return hlTS(code);
+}
+function renderOut(code){
+  $('out').innerHTML=highlight(code,LANG);
+}
+
+/* ---------- stats ---------- */
+function countInputStats(data){
+  var nodes=0,arrs=0,depth=0;
+  (function count(v,d){
+    if(nodes>50000)return;
+    nodes++;if(d>depth)depth=d;
+    if(Array.isArray(v)){arrs++;for(var i=0;i<v.length;i++)count(v[i],d+1);}
+    else if(v&&typeof v==='object'){for(var k in v)count(v[k],d+1);}
+  })(data,1);
+  $('stNodes').textContent=nodes;
+  $('stDepth').textContent=depth;
+  $('stArr').textContent=arrs;
+}
+function outputStats(code){
+  var types=0,fields=0;
+  if(LANG==='ts'){
+    types=(code.match(/^(?:export\s+)?(?:interface|type)\s/gm)||[]).length;
+    fields=(code.match(/^  (?:"[^"]*"|[A-Za-z_$][\w$]*)(?:\?)?\s*:/gm)||[]).length;
+  }else if(LANG==='go'){
+    types=(code.match(/^type\s/gm)||[]).length;
+    fields=(code.match(/^\t[A-Za-z0-9_]+\t/gm)||[]).length;
+  }else if(LANG==='py'){
+    types=(code.match(/^@dataclass/gm)||[]).length+(code.match(/^[A-Za-z_]\w*\s*=\s*(?:List|str|int|float|bool|Any|Optional|Union)\b/gm)||[]).length;
+    fields=(code.match(/^    [A-Za-z_][\w_]*\s*:/gm)||[]).length;
+  }else if(LANG==='zod'){
+    types=(code.match(/^(?:export\s+)?const\s+\w+Schema\s*=/gm)||[]).length;
+    fields=(code.match(/^  (?:"[^"]*"|[A-Za-z_$][\w$]*):\s/gm)||[]).length;
+  }else if(LANG==='rs'){
+    types=(code.match(/^(?:pub\s+)?(?:struct|type)\s/gm)||[]).length;
+    fields=(code.match(/^\s+pub\s+[A-Za-z0-9_]+:/gm)||[]).length;
+  }else{
+    types=(code.match(/^(?:export\s+)?const\s+\w+Schema\s*=/gm)||[]).length;
+    fields=(code.match(/^  (?:"[^"]*"|[A-Za-z_$][\w$]*):\s/gm)||[]).length;
+  }
+  return{types:types,fields:fields,lines:code.split('\n').length};
+}
+
+/* ---------- main pipeline ---------- */
+function render(){
+  if(!lastAnalyzed)return;
+  var o={optNull:OPT.optNull,exportKw:OPT.exportKw,ptr:OPT.ptr,reqOnly:OPT.reqOnly};
+  var code=
+    LANG==='ts'  ? emitTS(lastAnalyzed.root,o) :
+    LANG==='go'  ? emitGO(lastAnalyzed.root,o) :
+    LANG==='py'  ? emitPY(lastAnalyzed.root,o) :
+    LANG==='zod' ? emitZOD(lastAnalyzed.root,o) :
+    LANG==='rs'  ? emitRS(lastAnalyzed.root,o) :
+                   emitPYD(lastAnalyzed.root,o);
+  renderOut(code);
+  var s=outputStats(code);
+  $('stTypes').textContent=s.types;
+  $('stFields').textContent=s.fields;
+  $('stLines').textContent=s.lines;
+  $('stNulls').textContent=OPT.reqOnly?'REQ-ONLY':(OPT.optNull?'OPTIONAL':'INLINE UNION');
+  $('outStat').className='ok';
+  $('outStat').textContent='OK ▸ '+LANG.toUpperCase();
+  return code;
+}
+function forge(explicit){
+  var raw=$('input').value.trim();
+  hideErr();
+  if(!raw){
+    showErr('STDIN EMPTY','nothing to parse — paste an API response, drop a .json file, or use ▲ load.');
+    return;
+  }
+  var t0=performance.now(),data;
+  try{
+    data=JSON.parse(raw);
+  }catch(e){
+    var where=parseErrorInfo(e.message,raw);
+    showErr('PARSE ERROR'+(where?' @ '+where:''),esc(String(e.message||e))+'.'+parseErrorHint(e.message));
+    return;
+  }
+  var ms=performance.now()-t0;
+  $('stTime').textContent=ms.toFixed(1)+'ms';
+  countInputStats(data);
+  try{
+    lastAnalyzed=analyzeAndStrip(data,OPT.reqOnly);
+  }catch(e){
+    showErr('ANALYZE FAILED','payload too deeply nested or unsupported for type inference.');
+    return;
+  }
+  var code=render();
+  $('okOut').textContent='✓ forged '+outputStats(code).types+' type(s) in '+ms.toFixed(1)+'ms — zero bytes left your machine';
+  $('okOut').classList.add('show');
+  if(explicit){saveHistory(raw);saveLast(raw);}
+}
+
+/* ---------- history (guarded localStorage) ---------- */
+var HKEY='typeforge_history_v1';
+var LKEY='typeforge_last_v1';
+function saveLast(raw){try{localStorage.setItem(LKEY,raw);}catch(e){/* private mode: skip */}}
+function summarize(raw){
+  try{
+    var p=JSON.parse(raw);
+    if(Array.isArray(p))return'array['+p.length+']';
+    if(p&&typeof p==='object')return'object{'+Object.keys(p).length+'}';
+    return typeof p;
+  }catch(e){return'snippet';}
+}
+function loadHistory(){
+  var el=$('chips');el.innerHTML='';
+  var list;
+  try{list=JSON.parse(localStorage.getItem(HKEY)||'[]');}catch(e){list=[];}
+  if(!Array.isArray(list))list=[];
+  list.slice(0,5).forEach(function(item){
+    var b=document.createElement('button');
+    b.className='chip';
+    b.textContent='↺ '+item.label;
+    b.title='restore this payload into stdin';
+    b.onclick=function(){
+      $('input').value=item.raw;
+      updateBytes();
+      forge(true);
+      toast('stdin restored');
+    };
+    el.appendChild(b);
+  });
+}
+function saveHistory(raw){
+  var list;
+  try{list=JSON.parse(localStorage.getItem(HKEY)||'[]');}catch(e){list=[];}
+  if(!Array.isArray(list))list=[];
+  list=list.filter(function(x){return x.raw!==raw;});
+  list.unshift({raw:raw,label:summarize(raw)});
+  if(list.length>5)list.length=5;
+  try{localStorage.setItem(HKEY,JSON.stringify(list));}catch(e){/* private mode: skip */}
+  loadHistory();
+}
+
+/* ---------- clipboard / file / download (permission-safe fallbacks) ---------- */
+function copyOut(){
+  if(!lastAnalyzed){toast('nothing to copy — forge first');return;}
+  var code=$('out').textContent;
+  function fallback(){
+    var ta=document.createElement('textarea');
+    ta.value=code;
+    ta.style.position='fixed';ta.style.opacity='0';
+    document.body.appendChild(ta);
+    ta.select();
+    var okFlag=false;
+    try{okFlag=document.execCommand('copy');}catch(e){}
+    document.body.removeChild(ta);
+    toast(okFlag?'copied (legacy api)':'copy blocked — select the output & press CTRL+C');
+  }
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(code).then(function(){toast('copied to clipboard');},fallback);
+  }else fallback();
+}
+function downloadOut(){
+  if(!lastAnalyzed){toast('nothing to save — forge first');return;}
+  var ext=LANG==='go'?'.go':LANG==='py'?'.py':LANG==='rs'?'.rs':LANG==='pyd'?'.py':'.ts';
+  var name='types_'+lastAnalyzed.name.toLowerCase()+ext;
+  try{
+    var blob=new Blob([$('out').textContent],{type:'text/plain'});
+    var a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download=name;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(function(){URL.revokeObjectURL(a.href);a.remove();},400);
+    toast('saved '+name);
+  }catch(e){
+    toast('download blocked by browser — use copy instead');
+  }
+}
+function readFile(file){
+  if(!file)return;
+  if(file.size>2*1024*1024){
+    showErr('FILE TOO LARGE','max 2 MB — paste a trimmed response instead.');
+    return;
+  }
+  var r=new FileReader();
+  r.onload=function(){
+    $('input').value=String(r.result||'');
+    updateBytes();
+    forge(true);
+    toast('loaded '+file.name);
+  };
+  r.onerror=function(){
+    showErr('FILE READ ERROR','the browser refused to read that file — paste the JSON directly.');
+  };
+  try{r.readAsText(file);}catch(e){
+    showErr('FILE READ ERROR','file access denied — paste the JSON instead.');
+  }
+}
+
+/* ---------- wiring ---------- */
+var input=$('input'),deb=null;
+function updateBytes(){
+  var n=new Blob([input.value]).size;
+  $('inBytes').textContent=n+' BYTES';
+}
+input.addEventListener('input',function(){
+  updateBytes();
+  clearTimeout(deb);
+  deb=setTimeout(function(){saveLast(input.value);forge(false);},400);
+});
+input.addEventListener('paste',function(){setTimeout(function(){updateBytes();forge(true);},60);});
+input.addEventListener('focus',function(){$('pIn').classList.add('focus');});
+input.addEventListener('blur',function(){$('pIn').classList.remove('focus');});
+
+/* tabs */
+$('tabs').addEventListener('click',function(e){
+  var b=e.target.closest('.tab');
+  if(!b)return;
+  document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('on');});
+  b.classList.add('on');
+  LANG=b.dataset.lang;
+  if(lastAnalyzed)render();
+  else toast(LANG+' emitter armed');
+  toast('emitter: '+LANG);
+});
+
+/* toggles */
+function bindToggle(id,key){
+  $(id).addEventListener('click',function(){
+    OPT[key]=!OPT[key];
+    $(id).classList.toggle('on',OPT[key]);
+    if(lastAnalyzed)render();
+    toast(id.replace('tgl','')+': '+(OPT[key]?'ON':'OFF'));
+  });
+}
+bindToggle('tglNull','optNull');
+bindToggle('tglExp','exportKw');
+bindToggle('tglPtr','ptr');
+bindToggle('tglReq','reqOnly');
+
+/* buttons */
+$('btnCopy').addEventListener('click',copyOut);
+$('btnDl').addEventListener('click',downloadOut);
+$('btnSwap').addEventListener('click',function(){
+  if(!lastAnalyzed){toast('output empty');return;}
+  input.value=$('out').textContent;
+  updateBytes();
+  forge(true);
+  toast('output → stdin · re-forged');
+});
+$('fileIn').addEventListener('change',function(e){
+  readFile(e.target.files[0]);
+  e.target.value='';
+});
+
+/* drag & drop */
+var pIn=$('pIn');
+pIn.addEventListener('dragover',function(e){e.preventDefault();pIn.classList.add('focus');});
+pIn.addEventListener('dragleave',function(){pIn.classList.remove('focus');});
+pIn.addEventListener('drop',function(e){
+  e.preventDefault();
+  pIn.classList.remove('focus');
+  var f=e.dataTransfer&&e.dataTransfer.files&&e.dataTransfer.files[0];
+  if(f){readFile(f);}
+  else{
+    input.value=e.dataTransfer.getData('text')||'';
+    updateBytes();
+    forge(true);
+  }
+});
+
+/* global shortcuts */
+document.addEventListener('keydown',function(e){
+  if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){e.preventDefault();forge(true);}
+  if((e.ctrlKey||e.metaKey)&&e.shiftKey&&(e.key==='C'||e.key==='c')){e.preventDefault();copyOut();}
+  if(e.key==='Escape'){hideErr();}
+});
+
+/* ============================================================
+   PIXELSCAPE DECOR — starfield, boot, clock
+   ============================================================ */
+(function decor(){
+  var cv=$('stars'),cx=cv.getContext('2d'),stars=[],W,H,t=0;
+  function size(){
+    W=cv.width=Math.max(1,Math.floor(innerWidth/3));
+    H=cv.height=Math.max(1,Math.floor(innerHeight/3));
+    stars=[];
+    var n=Math.min(180,Math.floor(W*H/700));
+    for(var i=0;i<n;i++)stars.push({
+      x:(Math.random()*W)|0,y:(Math.random()*H)|0,
+      c:Math.random()<.82?'#00FF66':(Math.random()<.5?'#FFB000':'#8B949E'),
+      s:Math.random()<.12?2:1,
+      ph:Math.random()*6.28
+    });
+  }
+  function draw(){
+    cx.clearRect(0,0,W,H);
+    t+=.016;
+    for(var i=0;i<stars.length;i++){
+      var s=stars[i];
+      cx.globalAlpha=.2+.8*Math.abs(Math.sin(t*1.5+s.ph));
+      cx.fillStyle=s.c;
+      cx.fillRect(s.x,s.y,s.s,s.s);
+    }
+    cx.globalAlpha=1;
+    requestAnimationFrame(draw);
+  }
+  size();
+  addEventListener('resize',size);
+  draw();
+
+  var pwr=['█▇▆▅','█▇▆▆','█▇▇▅','█▆▆▅'],pi=0;
+  setInterval(function(){pi=(pi+1)%pwr.length;$('pwr').textContent=pwr[pi];},1800);
+  function tick(){
+    var d=new Date(),p=function(n){return n<10?'0'+n:''+n;};
+    $('clock').textContent=p(d.getHours())+':'+p(d.getMinutes())+':'+p(d.getSeconds());
+  }
+  tick();
+  setInterval(tick,1000);
+
+  var boot=$('boot');
+  var lines=[
+    '<span class="k">TYPEFORGE BIOS v1.0 — 64K RAM SYSTEM</span>',
+    '<span class="g">  ▸ heap check ............ <span class="a">OK</span></span>',
+    '<span class="g">  ▸ loading PARSER.COM .... <span class="a">OK</span></span>',
+    '<span class="g">  ▸ emitters .............. TS · GO · PY <span class="a">READY</span></span>',
+    '<span class="g">  ▸ network stack ......... <span class="a">OFFLINE (by design)</span></span>',
+    '<span class="g">READY.</span> <span class="k">awaiting stdin_</span>'
+  ];
+  var li=0;
+  (function typeLine(){
+    if(li>=lines.length)return;
+    var div=document.createElement('div');
+    div.innerHTML=lines[li];
+    div.style.animation='slidein .12s steps(3)';
+    boot.appendChild(div);
+    li++;
+    setTimeout(typeLine,li===1?320:150);
+  })();
+})();
+
+/* ---------- sample gallery + session restore ---------- */
+var SAMPLES=[
+ {label:'user+orders',raw:JSON.stringify({user_id:42,username:'ada_lovelace',email:null,is_active:true,balance:1250.75,login_count:187,tags:['admin','beta-tester'],address:{street:'12 Analytical St',city:'London',zip:'EC1A',geo:{lat:51.5,lng:-0.12}},orders:[{order_id:1001,total:49.99,status:'shipped',items:[{sku:'KB-01',qty:1,price:49.99}]},{order_id:1002,total:120,status:'delivered',items:[{sku:'MN-02',qty:2,price:60}],coupon:null}]},null,2)},
+ {label:'repo+owner',raw:JSON.stringify({id:1296269,node_id:'MDEwOlJlcG9zaXRvcnkx',name:'router',full_name:'example/router',owner:{login:'octocat',id:583231,site_admin:false,type:'Organization'},private:false,forks_count:9,stargazers_count:80,open_issues_count:0,license:{key:'mit',name:'MIT License',spdx_id:'MIT'},topics:['http','server'],created_at:'2014-02-11T14:37:14Z'},null,2)},
+ {label:'todos[]',raw:JSON.stringify([{userId:1,id:1,title:'delectus aut autem',completed:false},{userId:1,id:2,title:'quis ut nam facilis',completed:true},{userId:1,id:3,title:null,completed:false}],null,2)},
+ {label:'payment',raw:JSON.stringify({transaction_id:'txn_1Nabc123',amount:2500,currency:'usd',status:'succeeded',captured:true,payment_method:{type:'card',card:{brand:'visa',last4:'4242',exp_month:8,exp_year:2027,country:'US'}},receipt_email:null,metadata:{order_id:'6735'},created:1690000000},null,2)},
+ {label:'weather+list',raw:JSON.stringify({cod:'200',message:0,cnt:2,list:[{dt:1690000000,main:{temp:293.5,feels_like:293.9,temp_min:292.8,temp_max:294.1,pressure:1015,humidity:64},weather:[{id:800,main:'Clear',description:'clear sky',icon:'01d'}],wind:{speed:3.2,deg:210},dt_txt:'2026-07-20 12:00:00'},{dt:1690003600,main:{temp:294.1,feels_like:294.4,temp_min:293.5,temp_max:295,pressure:1014,humidity:60},weather:[{id:500,main:'Rain',description:'light rain',icon:'10d'}],wind:{speed:4.1,deg:230},dt_txt:'2026-07-20 13:00:00'}]},null,2)}
+];
+$('samplesRow').addEventListener('click',function(e){
+  var b=e.target.closest('[data-sample]');
+  if(!b)return;
+  input.value=SAMPLES[+b.dataset.sample].raw;
+  updateBytes();
+  forge(true);
+  toast('sample loaded: '+SAMPLES[+b.dataset.sample].label);
+});
+
+var restoredLast=null;
+try{restoredLast=localStorage.getItem(LKEY);}catch(e){}
+if(restoredLast&&restoredLast.trim()){
+  input.value=restoredLast;
+  setTimeout(function(){toast('session restored — last stdin recovered');},900);
+}else{
+  input.value=SAMPLES[0].raw;
+}
+updateBytes();
+loadHistory();
+setTimeout(function(){forge(false);},650);
+</script>
+</body>
+</html>
