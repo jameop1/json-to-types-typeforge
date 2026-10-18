@@ -14,4 +14,4 @@ Transform raw JSON API payloads into clean, idiomatic type definitions across Ty
 
 ## Getting Started
 
-Open `index.html` in any modern web browser and paste your JSON payload.
+Open `index.html` in any modern web browser and paste your JSON payload or use it on https://jameop1.github.io/json-to-types-typeforge/
